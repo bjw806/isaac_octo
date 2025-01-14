@@ -1,0 +1,15 @@
+{
+  "fileFormat": "tfrecord",
+  "name": "agv",
+  "splits": [
+    {
+      "filepathTemplate": "{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}",
+      "name": "train",
+      "numBytes": "1390084057",
+      "shardLengths": [
+        "10"
+      ]
+    }
+  ],
+  "version": "0.0.5"
+}

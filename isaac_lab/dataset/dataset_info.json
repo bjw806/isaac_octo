@@ -1,0 +1,11 @@
+{
+  "fileFormat": "tfrecord",
+  "name": "agv_example",
+  "splits": [
+    {
+      "filepathTemplate": "{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}",
+      "name": "train"
+    }
+  ],
+  "version": "0.0.1"
+}

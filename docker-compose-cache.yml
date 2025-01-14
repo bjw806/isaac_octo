@@ -1,0 +1,100 @@
+version: "3.7"
+
+networks: 
+  isaac_cache: 
+    ipam:
+      config: 
+        - subnet: "${CONTAINER_SUBNET}"
+    driver: bridge
+    name: IsaacCacheNet
+
+services:
+  nucleus-cache:
+    image: ${REGISTRY}/nucleus-cache:${CACHE_VERSION}
+    restart: always
+    environment: 
+      ACCEPT_EULA: "${ACCEPT_EULA:?ACCEPT_EULA must be set to 1}"
+
+      OMNI_CACHE_TYPE: nucleus-cache
+
+      OMNI_CACHE_SSL_ENABLED:  ${SSL_ENABLED}
+      OMNI_CACHE_SSL_PASSWORD: ${SSL_KEY_PASSWORD}
+
+      OV_CACHE_SSL_CERT_FILE: /etc/ssl/ssl.crt
+      OV_CACHE_SSL_KEY_FILE: /etc/ssl/ssl.key
+
+      OMNI_CACHE_YAML_CONFIG: |
+        enable_frontend: false
+        frontend_root: /omni/omnicache_browser
+
+        log_path: /omni/log
+        cache_root: /omni/data
+
+        metrics_enabled: true
+        listen_address: "0.0.0.0"
+        control_address: "0.0.0.0"
+        metrics_address: "0.0.0.0"
+
+        client_compression: ${ALLOW_COMPRESSION}
+        other_upstreams_compression: ${UPSTREAM_REMOTES_COMPRESSION}
+
+        proxy_server_compression: ${UPSTREAM_CACHE_COMPRESSION}
+        proxy_server: ${UPSTREAM_CACHE}
+
+        max_cached_data_size_gigs: ${MAX_CACHE_SIZE_GIGS_PER_UPSTREAM}
+        cache_cleanup_threshold_gigs: ${MIN_CACHE_SIZE_GIGS_PER_UPSTREAM}
+
+    volumes:
+      - ${DATA_ROOT}/data:/omni/data
+      - ${DATA_ROOT}/logs:/omni/log
+
+      - type: bind
+        source:  ${SSL_CERT}
+        target: /etc/ssl/ssl.crt
+        read_only: true
+
+      - type: bind
+        source:  ${SSL_KEY}
+        target: /etc/ssl/ssl.key
+        read_only: true
+
+        #      - type: bind
+        #source:  ${SSL_PASSWORD_FILE}
+        #target: /etc/ssl/ssl.pwd
+        #read_only: true
+
+    # ports:
+    #   - "${CACHE_PORT}:8891"
+    #   - "${METRICS_PORT}:9500"
+      
+    networks:
+      - isaac_cache
+
+  nucleus-cache-warmer:
+    image: ${REGISTRY}/nucleus-cache-warmer:${CACHE_VERSION}
+    restart: always
+    environment:
+      ACCEPT_EULA: "${ACCEPT_EULA:?ACCEPT_EULA must be set to 1}"
+
+      OMNI_CACHE_SERVER: http://nucleus-cache:8891
+
+      OMNI_NUCLEUS_SERVERS: ${PREHEAT_CONFIG}
+      
+    networks:
+      - isaac_cache
+
+
+  logrotate:
+    image: graffic/logrotate:1.4
+    restart: always
+    volumes:
+      - ${DATA_ROOT}/logs:/omni/log
+    environment:
+      LOGROTATE_PATTERN: "/omni/log/*.log"
+      LOGROTATE_OPTIONS: |-
+        size 100M
+        compress
+        
+    networks:
+      - isaac_cache
+

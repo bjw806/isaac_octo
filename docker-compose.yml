@@ -1,0 +1,43 @@
+# networks:
+#   isaac_cache_proxy:
+#     external:
+#       name: IsaacCacheNet
+
+services:
+  isaac_octo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: isaac_octo
+    entrypoint: ["bash", "docker_entrypoint.sh"]
+    tty: true
+    # stdin_open: true
+    env_file:
+      - ./octo/local.env
+    environment:
+      - ACCEPT_EULA=Y
+      - DISPLAY=$DISPLAY
+      - XAUTHORITY=$XAUTHORITY
+      - XDG_RUNTIME_DIR=/tmp/runtime-$USER
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [ gpu ]
+    volumes:
+      # - .:/home/sites/
+      - ./octo:/home/sites/octo/mnt
+      - ./isaac_lab:/home/sites/IsaacLab/mnt
+      - ./isaac_lab/model:/home/sites/IsaacLab/model
+      - ./isaac_lab/modifier/environment/agv/direct:/home/sites/IsaacLab/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/direct/agv
+      - ./isaac_lab/modifier/environment/agv/manager_based:/home/sites/IsaacLab/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/agv
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/root/.Xauthority
+  
+    # networks:
+    #   - isaac_cache_proxy
+
