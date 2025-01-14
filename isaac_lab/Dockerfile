@@ -18,7 +18,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN ln -s /usr/bin/python3 /usr/bin/python
 WORKDIR /home/sites
 
-RUN pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install ultralytics
+RUN pip install torch==2.4.0 torchvision --index-url https://download.pytorch.org/whl/cu118
 RUN pip install "envlogger[tfds]"
 # RUN pip install isaacsim==4.2.0.2 isaacsim-extscache-physics==4.2.0.2 isaacsim-extscache-kit==4.2.0.2 isaacsim-extscache-kit-sdk==4.2.0.2 --extra-index-url https://pypi.nvidia.com
 RUN pip install isaacsim-rl isaacsim-replicator isaacsim-extscache-physics isaacsim-extscache-kit-sdk isaacsim-extscache-kit isaacsim-app --extra-index-url https://pypi.nvidia.com

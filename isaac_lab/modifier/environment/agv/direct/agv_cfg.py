@@ -25,7 +25,7 @@ class AGV_JOINT:
 AGV_CFG: ArticulationCfg = ArticulationCfg(
     # prim_path="{ENV_REGEX_NS}/AGV",
     spawn=sim_utils.UsdFileCfg(
-        usd_path="./model/agv/agv_2.usd",
+        usd_path="/home/sites/IsaacLab/model/agv/agv_2.usd",
         # rigid_props=sim_utils.RigidBodyPropertiesCfg(
         #     rigid_body_enabled=True,
         #     max_linear_velocity=1000.0,

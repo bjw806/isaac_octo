@@ -6,6 +6,7 @@ from omni.isaac.lab.app import AppLauncher
 parser = argparse.ArgumentParser(
     description="Collect demonstrations for Isaac Lab environments."
 )
+parser.add_argument("--task", type=str, default="Isaac-AGV-Managed", help="Name of the task.")
 parser.add_argument(
     "--num_demos",
     type=int,
@@ -41,7 +42,6 @@ from omni.isaac.lab_tasks.utils.parse_cfg import parse_env_cfg
 import envlogger
 from envlogger.backends import tfds_backend_writer
 
-task = "Isaac-AGV-Managed"
 trajectories_dir = "mnt/dataset/"
 num_envs = 1
 
@@ -49,7 +49,7 @@ def main():
     """Collect demonstrations from the environment using teleop interfaces."""
     # parse configuration
     env_cfg = parse_env_cfg(
-        task,
+        args_cli.task,
         device=args_cli.device,
         num_envs=num_envs,
     )
@@ -67,7 +67,7 @@ def main():
     # env_cfg.terminations.object_reached_goal = DoneTerm(func=mdp.object_reached_goal)
 
     # create environment
-    env = gym.make(task, cfg=env_cfg)
+    env = gym.make(args_cli.task, cfg=env_cfg)
     env = GymWrapper(env)
 
     dataset_config = tfds.rlds.rlds_base.DatasetConfig(

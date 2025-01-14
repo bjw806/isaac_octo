@@ -3,6 +3,7 @@ import argparse
 from omni.isaac.lab.app import AppLauncher
 
 parser = argparse.ArgumentParser(description="Keyboard teleoperation for Isaac Lab environments.")
+parser.add_argument("--task", type=str, default="Isaac-AGV-Managed", help="Name of the task.")
 parser.add_argument(
     "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
 )
@@ -30,7 +31,7 @@ from skrl.utils.spaces.torch import flatten_tensorized_space
 
 def main():
     env_cfg = parse_env_cfg(
-        "Isaac-AGV-Managed",
+        args_cli.task,
         device=args_cli.device,
         num_envs=1,
         use_fabric=not args_cli.disable_fabric,
