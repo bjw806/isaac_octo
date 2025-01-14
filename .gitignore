@@ -2,3 +2,4 @@
 *.tfrecord-*
 *.env
 __pycache__
+octo/train/*
