@@ -21,7 +21,3 @@ services:
             capabilities: [ gpu ]
     volumes:
       - ./octo:/home/sites/octo/mnt
-      # - ./isaac_lab/model:/home/sites/IsaacLab/model
-      # - ./isaac_lab/modifier/environment/agv/direct:/home/sites/IsaacLab/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/direct/agv
-      # - ./isaac_lab/modifier/environment/agv/manager_based:/home/sites/IsaacLab/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/agv
-
