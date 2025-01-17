@@ -24,6 +24,8 @@ services:
           - driver: nvidia
             count: all
             capabilities: [ gpu ]
+    ports:
+      - 6006:6006
     # stdin_open: true
     tty: true
     volumes:

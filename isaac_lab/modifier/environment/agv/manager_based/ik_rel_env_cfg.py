@@ -5,7 +5,7 @@ from omni.isaac.lab.envs.mdp.actions.actions_cfg import (
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab_tasks.direct.skrl_test.agv_cfg import AGV_JOINT
 
-from .manage_agv_env import AGVEnvCfg
+from .agv_env import AGVEnvCfg
 
 
 @configclass

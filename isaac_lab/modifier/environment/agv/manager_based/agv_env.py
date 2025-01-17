@@ -83,8 +83,8 @@ class AGVSceneCfg(InteractiveSceneCfg):
         prim_path="{ENV_REGEX_NS}/AGV/rcam_1/Camera",
         data_types=["rgb", "depth"],
         spawn=None,
-        height=512,
-        width=512,
+        height=300,
+        width=300,
     )
 
     # lcam: TiledCameraCfg = TiledCameraCfg(
@@ -202,6 +202,18 @@ class TheiaTinyObservationCfg:
                 "model_device": "cuda:0",
             },
         )
+
+        # joint_pos = ObsTerm(
+        #     func=mdp.joint_pos_rel, params={"asset_cfg": SceneEntityCfg("agv")}
+        # )
+        # joint_vel = ObsTerm(
+        #     func=mdp.joint_vel_rel, params={"asset_cfg": SceneEntityCfg("agv")}
+        # )
+        # actions = ObsTerm(func=mdp.last_action)
+
+        # def __post_init__(self):
+        #     self.enable_corruption = False
+        #     self.concatenate_terms = False
 
     policy: ObsGroup = TheiaTinyFeaturesCameraPolicyCfg()
 
@@ -957,7 +969,7 @@ class RewardsCfg:
     # l_pin_z_pos = RewTerm(func=pin_pos_z_reward, weight=-50, params={"right": False})
     r_pin_vel = RewTerm(func=pin_vel_reward, weight=-10, params={"right": True})
     # l_pin_vel = RewTerm(func=pin_vel_reward, weight=-10, params={"right": False})
-    r_pin_acc = RewTerm(func=pin_acc_reward, weight=-1e-2, params={"right": True})
+    # r_pin_acc = RewTerm(func=pin_acc_reward, weight=-1e-2, params={"right": True})
     # l_pin_acc = RewTerm(func=pin_acc_reward, weight=-1e-2, params={"right": False})
     # r_pin_joint_acc = RewTerm(
     #     func=mdp.joint_acc_l2,
@@ -980,16 +992,16 @@ class RewardsCfg:
     #     },
     # )
     # r_pin_torque = RewTerm(func=pin_torque_reward, weight=-1e-6, params={"right": True})
-    r_pin_joint_torque = RewTerm(
-        func=mdp.joint_torques_l2,
-        weight=-2e-3,
-        params={
-            "asset_cfg": SceneEntityCfg(
-                "agv",
-                joint_names=[AGV_JOINT.RR_RPIN_PRI],
-            )
-        },
-    )
+    # r_pin_joint_torque = RewTerm(
+    #     func=mdp.joint_torques_l2,
+    #     weight=-2e-3,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "agv",
+    #             joint_names=[AGV_JOINT.RR_RPIN_PRI],
+    #         )
+    #     },
+    # )
     # l_pin_joint_torque = RewTerm(
     #     func=mdp.joint_torques_l2,
     #     weight=-2e-3,
@@ -1021,16 +1033,16 @@ class RewardsCfg:
     #         )
     #     },
     # )
-    xy_joint_torque = RewTerm(
-        func=mdp.joint_torques_l2,
-        weight=-1e-3,
-        params={
-            "asset_cfg": SceneEntityCfg(
-                "agv",
-                joint_names=[AGV_JOINT.PZ_PY_PRI, AGV_JOINT.PY_PX_PRI],
-            )
-        },
-    )
+    # xy_joint_torque = RewTerm(
+    #     func=mdp.joint_torques_l2,
+    #     weight=-1e-3,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "agv",
+    #             joint_names=[AGV_JOINT.PZ_PY_PRI, AGV_JOINT.PY_PX_PRI],
+    #         )
+    #     },
+    # )
     r_pin_correct = RewTerm(func=pin_correct_reward, weight=10, params={"right": True})
     # l_pin_correct = RewTerm(func=pin_correct_reward, weight=10, params={"right": False})
 
@@ -1043,17 +1055,17 @@ class RewardsCfg:
     #     },
     # )
 
-    # r_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-3e3, params={"right": True})
+    r_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-3e3, params={"right": True})
     # l_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-3e3, params={"right": False})
 
-    niro_undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,
-        weight=-10,
-        params={
-            "sensor_cfg": SceneEntityCfg("niro_contact"),
-            "threshold": 0,
-        },
-    )
+    # niro_undesired_contacts = RewTerm(
+    #     func=mdp.undesired_contacts,
+    #     weight=-10,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg("niro_contact"),
+    #         "threshold": 0,
+    #     },
+    # )
 
     # niro_contact_force = RewTerm(
     #     func=mdp.contact_forces,
@@ -1192,7 +1204,7 @@ class AGVEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
     scene: AGVSceneCfg = AGVSceneCfg(num_envs=4, env_spacing=3.0)
     # Basic settings
-    observations = DictObservationCfg()
+    observations = TheiaTinyObservationCfg()
     actions: ActionsCfg = ActionsCfg()
     events: EventCfg = EventCfg()
     # MDP settings

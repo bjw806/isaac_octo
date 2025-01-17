@@ -19,7 +19,7 @@ import torch
 
 import carb
 
-from .util.se3_keyboard_agv import Se3KeyboardAGV
+from util.se3_keyboard_agv import Se3KeyboardAGV
 from omni.isaac.lab.managers import TerminationTermCfg as DoneTerm
 
 import omni.isaac.lab_tasks  # noqa: F401
