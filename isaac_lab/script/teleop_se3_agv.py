@@ -10,7 +10,7 @@ parser.add_argument(
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
-app_launcher = AppLauncher(headless=args_cli.headless)
+app_launcher = AppLauncher(headless=args_cli.headless, enable_cameras=True)
 simulation_app = app_launcher.app
 
 

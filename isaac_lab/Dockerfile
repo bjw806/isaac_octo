@@ -18,24 +18,13 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN ln -s /usr/bin/python3 /usr/bin/python
 WORKDIR /home/sites
 
-RUN pip install ultralytics
 RUN pip install torch==2.4.0 torchvision --index-url https://download.pytorch.org/whl/cu118
-RUN pip install "envlogger[tfds]"
-# RUN pip install isaacsim==4.2.0.2 isaacsim-extscache-physics==4.2.0.2 isaacsim-extscache-kit==4.2.0.2 isaacsim-extscache-kit-sdk==4.2.0.2 --extra-index-url https://pypi.nvidia.com
+RUN pip install ultralytics "envlogger[tfds]" 
 RUN pip install isaacsim-rl isaacsim-replicator isaacsim-extscache-physics isaacsim-extscache-kit-sdk isaacsim-extscache-kit isaacsim-app --extra-index-url https://pypi.nvidia.com
 
 RUN git clone https://github.com/isaac-sim/IsaacLab.git
 
-# RUN pip install scipy==1.9.0
 WORKDIR /home/sites/IsaacLab
 RUN ./isaaclab.sh -i
-# RUN pip uninstall skrl -y && pip install git+https://github.com/Toni-SM/skrl.git@develop
-# RUN cd source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks && \
-#     mkdir direct/agv && mkdir manager_based/agv
-# RUN chmod +x isaaclab.sh
-# RUN sh isaaclab.sh -i
-# COPY run_finetune.sh ./octo/.
-# COPY modifier/dataset.py ./octo/octo/data/dataset.py
-# RUN chmod +x ./octo/run_finetune.sh
 
 CMD ["bash"]
