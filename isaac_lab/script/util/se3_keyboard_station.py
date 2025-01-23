@@ -43,10 +43,14 @@ class Se3KeyboardAGV(DeviceBase):
         """Returns: A string containing the information of joystick."""
         msg = f"Keyboard Controller for SE(3): {self.__class__.__name__}\n"
         msg += f"\tKeyboard name: {self._input.get_keyboard_name(self._keyboard)}\n"
-        msg += "\t----------------------------------------------\n"
-        msg += "\tMove arm along x-axis: W/S\n"
-        msg += "\tMove arm along y-axis: A/D\n"
-        msg += "\tMove arm along z-axis: Q/E\n"
+        msg += "\t-----------------------AGV-----------------------\n"
+        msg += "\tmove: WASD\n"
+        msg += "\tpin: Z/X\n"
+        msg += "\tz-axis: Q/E\n"
+        msg += "\t---------------------IONIQ_5---------------------\n"
+        msg += "\tmove: IJKL\n"
+        msg += "\t-----------------------LIFT----------------------\n"
+        msg += "\tz-axis: O/P\n"
         return msg
 
     def reset(self):
