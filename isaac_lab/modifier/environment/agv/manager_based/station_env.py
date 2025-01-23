@@ -89,12 +89,12 @@ class StationSceneCfg(InteractiveSceneCfg):
     ioniq: ArticulationCfg = ArticulationCfg(
         prim_path=f"{ENV_REGEX_NS}/ioniq",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/sites/IsaacLab/model/station/ioniq_5.usd",
+            usd_path="/home/sites/IsaacLab/model/ioniq/ioniq_5.usd",
             mass_props=sim_utils.MassPropertiesCfg(mass=1000),
         ),
         init_state=ArticulationCfg.InitialStateCfg(
             pos=(2.85, -1.82, 1.2),
-            rot=(0.707, 0, 0, 0.707),      
+            rot=(0.707, 0, 0, 0.707),
             # pos=(12.17, 0, 1.2),
             # rot=(0, 0, 0, 1),
         ),
@@ -104,7 +104,7 @@ class StationSceneCfg(InteractiveSceneCfg):
                 effort_limit=10000000,
                 stiffness=1000000.0,
                 damping=0.0,
-            ),     
+            ),
             "navs": ImplicitActuatorCfg(
                 joint_names_expr=["fln", "frn"],
                 effort_limit=10000000,
@@ -112,6 +112,11 @@ class StationSceneCfg(InteractiveSceneCfg):
                 damping=1000.0,
             ),
         },
+    )
+    distant_light = AssetBaseCfg(
+        prim_path="/World/DistantLight",
+        spawn=sim_utils.DistantLightCfg(color=(.9, .9, .9), intensity=3000),
+        init_state=AssetBaseCfg.InitialStateCfg(rot=(0.65328, 0.2706, 0.2706, 0.65328)),
     )
 
 
@@ -148,8 +153,8 @@ class ActionsCfg:
     ioniq_wheel = mdp.RelativeJointPositionActionCfg(
         asset_name="ioniq",
         joint_names=["flw", "frw", "rlw", "rrw"],
-    )    
-    
+    )
+
     ioniq_nav = mdp.JointPositionActionCfg(
         asset_name="ioniq",
         joint_names=["fln", "frn"],
@@ -263,6 +268,20 @@ def randomize_object_position(
     rigid_object.write_root_state_to_sim(default_root_state, env_ids=env_ids)
 
 
+def set_color(env: ManagerBasedEnv, env_ids: torch.Tensor):
+    object_name = "ioniq"
+    material_name = "hHyundai_Ioniq5NRewardRecycled_2023Coloured_Material1"
+    property_name = "pbr_shader.inputs:emissiveColor"
+    stage = stage_utils.get_current_stage()
+
+    color = Gf.Vec3f(0, 0, 0)
+    color_spec = stage.GetAttributeAtPath(
+        f"/World/envs/env_0/{object_name}/ioniq_5__/Materials/{material_name}/{property_name}"
+        # /World/envs/env_0/ioniq/ioniq_5__/Materials
+    )
+    color_spec.Set(color)
+
+
 class fix_wing_joint(TermBase):
     def __call__(
         self,
@@ -272,8 +291,10 @@ class fix_wing_joint(TermBase):
         asset: Articulation = env.scene[asset_cfg.name]
         joint_ids = asset.find_joints([AGV_JOINT.PR_LR_REV, AGV_JOINT.PR_RR_REV])[0]
         env_ids = torch.arange(self.num_envs, device="cuda:0")
-        asset.write_joint_state_to_sim(.71, 0, joint_ids=joint_ids[0], env_ids=env_ids)
-        asset.write_joint_state_to_sim(-.71, 0, joint_ids=joint_ids[1], env_ids=env_ids)
+        asset.write_joint_state_to_sim(0.71, 0, joint_ids=joint_ids[0], env_ids=env_ids)
+        asset.write_joint_state_to_sim(
+            -0.71, 0, joint_ids=joint_ids[1], env_ids=env_ids
+        )
         return torch.zeros(self.num_envs, device="cuda:0").bool()
 
 
@@ -306,6 +327,10 @@ class EventCfg:
     #     mode="reset",
     # )
 
+    # color = EventTerm(
+    #     func=set_color,
+    #     mode="startup",
+    # )
     pass
 
 
@@ -359,3 +384,4 @@ class StationEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.render.enable_direct_lighting = True
         self.sim.render.enable_shadows = True
         self.sim.render.enable_ambient_occlusion = True
+        self.sim.render.enable_global_illumination = True

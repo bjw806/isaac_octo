@@ -8,6 +8,12 @@ LIFT_CFG: ArticulationCfg = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path="/home/sites/IsaacLab/model/station/lift_2.usd",
     ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        joint_pos={
+            "J_LRX": 0.15,
+            "J_RRX": 0.15,
+        },
+    ),
     actuators={
         "drop": ImplicitActuatorCfg(
             joint_names_expr=["J_LFZ", "J_LRZ", "J_RFZ", "J_RRZ"],
