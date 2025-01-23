@@ -25,8 +25,6 @@ from omni.isaac.lab.managers import TerminationTermCfg as DoneTerm
 import omni.isaac.lab_tasks  # noqa: F401
 from omni.isaac.lab_tasks.manager_based.manipulation.lift import mdp
 from omni.isaac.lab_tasks.utils import parse_env_cfg
-from skrl.memories.torch import RandomMemory
-from skrl.utils.spaces.torch import flatten_tensorized_space
 
 
 def main():
@@ -39,22 +37,11 @@ def main():
     env_cfg.terminations.time_out = None
     env = gym.make(args_cli.task, cfg=env_cfg)
 
-    memory = RandomMemory(memory_size=2048, num_envs=1, device=args_cli.device)
-    memory.create_tensor(name="states", size=env.observation_space, dtype=torch.float32)
-    memory.create_tensor(name="actions", size=env.action_space, dtype=torch.float32)
-    memory.create_tensor(name="rewards", size=1, dtype=torch.float32)
-    memory.create_tensor(name="terminated", size=1, dtype=torch.bool)
-    memory.create_tensor(name="log_prob", size=1, dtype=torch.float32)
-    memory.create_tensor(name="values", size=1, dtype=torch.float32)
-    memory.create_tensor(name="returns", size=1, dtype=torch.float32)
-    memory.create_tensor(name="advantages", size=1, dtype=torch.float32)
-
-
-    teleop_interface = Se3KeyboardAGV(pos_sensitivity=0.1)
+    teleop_interface = Se3KeyboardAGV(pos_sensitivity=0.02)
     teleop_interface.add_callback("L", env.reset)
     print(teleop_interface)
 
-    states, infos = env.reset()
+    env.reset()
     teleop_interface.reset()
 
     while simulation_app.is_running():
@@ -63,23 +50,10 @@ def main():
             delta_pose = delta_pose.astype("float32")
             delta_pose = torch.tensor(delta_pose, device=env.unwrapped.device).repeat(env.unwrapped.num_envs, 1)
             actions = delta_pose
-            next_states, rewards, terminated, truncated, infos = env.step(actions)
-
-            memory.add_samples(
-                states=flatten_tensorized_space(states),
-                actions=actions,
-                rewards=rewards,
-                next_states=next_states,
-                terminated=terminated,
-                truncated=truncated,
-                log_prob=torch.zeros_like(rewards),
-                values=torch.zeros_like(rewards),
-            )
+            _, _, terminated, truncated, _ = env.step(actions)
 
             if terminated.any() or truncated.any():
-                states, infos = env.reset()
-            else:
-                states = next_states
+                env.reset()
 
     env.close()
 

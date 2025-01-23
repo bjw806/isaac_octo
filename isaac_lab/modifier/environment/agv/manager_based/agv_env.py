@@ -203,17 +203,17 @@ class TheiaTinyObservationCfg:
             },
         )
 
-        # joint_pos = ObsTerm(
-        #     func=mdp.joint_pos_rel, params={"asset_cfg": SceneEntityCfg("agv")}
-        # )
-        # joint_vel = ObsTerm(
-        #     func=mdp.joint_vel_rel, params={"asset_cfg": SceneEntityCfg("agv")}
-        # )
-        # actions = ObsTerm(func=mdp.last_action)
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel, params={"asset_cfg": SceneEntityCfg("agv")}
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel_rel, params={"asset_cfg": SceneEntityCfg("agv")}
+        )
+        actions = ObsTerm(func=mdp.last_action)
 
-        # def __post_init__(self):
-        #     self.enable_corruption = False
-        #     self.concatenate_terms = False
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = False
 
     policy: ObsGroup = TheiaTinyFeaturesCameraPolicyCfg()
 
@@ -1043,7 +1043,7 @@ class RewardsCfg:
     #         )
     #     },
     # )
-    r_pin_correct = RewTerm(func=pin_correct_reward, weight=10, params={"right": True})
+    r_pin_correct = RewTerm(func=pin_correct_reward, weight=100, params={"right": True})
     # l_pin_correct = RewTerm(func=pin_correct_reward, weight=10, params={"right": False})
 
     # agv_undesired_contacts = RewTerm(
@@ -1055,7 +1055,7 @@ class RewardsCfg:
     #     },
     # )
 
-    r_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-3e3, params={"right": True})
+    r_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-5e3, params={"right": True})
     # l_pin_wrong = RewTerm(func=pin_wrong_reward, weight=-3e3, params={"right": False})
 
     # niro_undesired_contacts = RewTerm(
@@ -1129,7 +1129,7 @@ class TerminationsCfg:
     # pole_out_of_bounds = DoneTerm(func=pin_wrong, params={"right": True})
     # pole_contacts = DoneTerm(func=undesired_contacts)
 
-    pin_correct = DoneTerm(func=pin_correct, params={"right": True})
+    # pin_correct = DoneTerm(func=pin_correct, params={"right": True})
     draw_lines = DoneTerm(func=draw_lines)
 
 

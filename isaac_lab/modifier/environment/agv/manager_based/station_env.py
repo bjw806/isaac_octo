@@ -1,6 +1,7 @@
 import random
 from collections.abc import Sequence
 from dataclasses import MISSING
+from omni.isaac.lab.actuators import ImplicitActuatorCfg
 import numpy as np
 import omni.isaac.core.utils.stage as stage_utils
 import omni.isaac.core.utils.prims as prim_utils
@@ -30,12 +31,12 @@ from omni.isaac.lab.scene import InteractiveSceneCfg
 from omni.isaac.lab.sensors import ContactSensorCfg, TiledCameraCfg
 from omni.isaac.lab.utils import configclass
 from .agv_cfg import AGV_CFG, AGV_JOINT
+from .station_cfg import LIFT_CFG
 from pxr import Gf
 
 ENV_REGEX_NS = "/World/envs/env_.*"
 
 from omni.isaac.dynamic_control import _dynamic_control
-
 
 
 @configclass
@@ -47,8 +48,9 @@ class StationSceneCfg(InteractiveSceneCfg):
 
     station = AssetBaseCfg(
         prim_path=f"{ENV_REGEX_NS}/station",
-        spawn=sim_utils.UsdFileCfg(usd_path="/home/sites/IsaacLab/model/station/station_4.usd"),
-
+        spawn=sim_utils.UsdFileCfg(
+            usd_path="/home/sites/IsaacLab/model/station/station_empty.usd"
+        ),
     )
 
     # agv = prim_utils.get_prim_at_path(f"{ENV_REGEX_NS}/station/agv_3")
@@ -59,56 +61,69 @@ class StationSceneCfg(InteractiveSceneCfg):
         # prim_path=f"/World/station_1/agv_0",
         # spawn=None,
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/sites/IsaacLab/model/agv/agv_3.usd",
+            usd_path="/home/sites/IsaacLab/model/agv/agv_with_niro_no_collision.usd",
+            mass_props=sim_utils.MassPropertiesCfg(mass=1500),
         ),
         init_state=ArticulationCfg.InitialStateCfg(
-            pos=(18.0, 3.0, 1.302),
+            pos=(18.0, 3.0, 1.35),
             rot=(0.707, 0.0, 0.0, -0.707),
-        )
+        ),
     )
 
-    # agv:AssetBaseCfg  = AssetBaseCfg(
-    #     prim_path=f"{ENV_REGEX_NS}/station/agv_3",
-    #     spawn=None,
-    # )
+    lift_0: ArticulationCfg = LIFT_CFG.replace(
+        prim_path=f"{ENV_REGEX_NS}/lift_0",
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(12.2, 4.0, 1.2),
+            rot=(0.707, 0.0, 0.0, 0.707),
+        ),
+    )
 
-    # niro = RigidObjectCfg(
-    #     prim_path=f"{ENV_REGEX_NS}/Niro",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path="/home/sites/IsaacLab/model/niro/niro_no_joint.usd",
-    #         activate_contact_sensors=True,
-    #         # mass_props=sim_utils.MassPropertiesCfg(mass=10.0),
-    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(),
-    #         # articulation_props=sim_utils.ArticulationRootPropertiesCfg(articulation_enabled=False)
-    #     ),
-    #     init_state=RigidObjectCfg.InitialStateCfg(
-    #         pos=(-0.6, 0.0, 1.55),
-    #         # rot=(0.70711, 0.0, 0.0, 0.70711),
-    #     ),
-    # )
+    lift_1: ArticulationCfg = LIFT_CFG.replace(
+        prim_path=f"{ENV_REGEX_NS}/lift_1",
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(6.4, 4.0, 1.2),
+            rot=(0.707, 0.0, 0.0, 0.707),
+        ),
+    )
 
-    # lights
-    # dome_light = AssetBaseCfg(
-    #     prim_path="/World/DomeLight",
-    #     spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
-    # )
-    # distant_light = AssetBaseCfg(
-    #     prim_path="/World/DistantLight",
-    #     spawn=sim_utils.DistantLightCfg(color=(0.9, 0.9, 0.9), intensity=2500.0),
-    #     init_state=AssetBaseCfg.InitialStateCfg(rot=(0.738, 0.477, 0.477, 0.0)),
-    # )
+    ioniq: ArticulationCfg = ArticulationCfg(
+        prim_path=f"{ENV_REGEX_NS}/ioniq",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path="/home/sites/IsaacLab/model/station/ioniq_5.usd",
+            mass_props=sim_utils.MassPropertiesCfg(mass=1000),
+        ),
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(2.85, -1.82, 1.2),
+            rot=(0.707, 0, 0, 0.707),      
+            # pos=(12.17, 0, 1.2),
+            # rot=(0, 0, 0, 1),
+        ),
+        actuators={
+            "wheels": ImplicitActuatorCfg(
+                joint_names_expr=["flw", "frw", "rlw", "rrw"],
+                effort_limit=10000000,
+                stiffness=1000000.0,
+                damping=0.0,
+            ),     
+            "navs": ImplicitActuatorCfg(
+                joint_names_expr=["fln", "frn"],
+                effort_limit=10000000,
+                stiffness=50000.0,
+                damping=1000.0,
+            ),
+        },
+    )
 
 
 @configclass
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    agv = mdp.JointPositionActionCfg(
+    agv = mdp.RelativeJointPositionActionCfg(
         asset_name="agv",
         joint_names=[
             AGV_JOINT.MB_LW_REV,
             AGV_JOINT.MB_RW_REV,
-            # AGV_JOINT.MB_PZ_PRI,
             # AGV_JOINT.PZ_PY_PRI,
             # AGV_JOINT.PY_PX_PRI,
             # AGV_JOINT.PX_PR_REV,
@@ -118,6 +133,31 @@ class ActionsCfg:
             # AGV_JOINT.RR_RPIN_PRI,
         ],
         scale=1.0,
+    )
+
+    pin = mdp.JointPositionActionCfg(
+        asset_name="agv",
+        joint_names=[
+            AGV_JOINT.MB_PZ_PRI,
+            AGV_JOINT.LR_LPIN_PRI,
+            AGV_JOINT.RR_RPIN_PRI,
+        ],
+        scale=1,
+    )
+
+    ioniq_wheel = mdp.RelativeJointPositionActionCfg(
+        asset_name="ioniq",
+        joint_names=["flw", "frw", "rlw", "rrw"],
+    )    
+    
+    ioniq_nav = mdp.JointPositionActionCfg(
+        asset_name="ioniq",
+        joint_names=["fln", "frn"],
+    )
+
+    lift_0 = mdp.JointPositionActionCfg(
+        asset_name="lift_0",
+        joint_names=["J_LFZ", "J_LRZ", "J_RFZ", "J_RRZ"],
     )
 
 
@@ -223,6 +263,20 @@ def randomize_object_position(
     rigid_object.write_root_state_to_sim(default_root_state, env_ids=env_ids)
 
 
+class fix_wing_joint(TermBase):
+    def __call__(
+        self,
+        env: ManagerBasedRLEnv,
+        asset_cfg: SceneEntityCfg = SceneEntityCfg("agv"),
+    ) -> torch.Tensor:
+        asset: Articulation = env.scene[asset_cfg.name]
+        joint_ids = asset.find_joints([AGV_JOINT.PR_LR_REV, AGV_JOINT.PR_RR_REV])[0]
+        env_ids = torch.arange(self.num_envs, device="cuda:0")
+        asset.write_joint_state_to_sim(.71, 0, joint_ids=joint_ids[0], env_ids=env_ids)
+        asset.write_joint_state_to_sim(-.71, 0, joint_ids=joint_ids[1], env_ids=env_ids)
+        return torch.zeros(self.num_envs, device="cuda:0").bool()
+
+
 def reset_object_position(
     env: ManagerBasedEnv,
     env_ids: torch.Tensor,
@@ -247,7 +301,13 @@ class EventCfg:
     #     mode="reset",
     # )
 
+    # wing = EventTerm(
+    #     func=fix_wing_joint,
+    #     mode="reset",
+    # )
+
     pass
+
 
 def euclidean_distance(src, dist):
     distance = torch.sqrt(torch.sum((src - dist) ** 2, dim=src.ndim - 1) + 1e-8)
@@ -263,6 +323,7 @@ class RewardsCfg:
 @configclass
 class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
+    wing = DoneTerm(func=fix_wing_joint)
     # draw_lines = DoneTerm(func=draw_lines)
 
 
@@ -282,11 +343,11 @@ class StationEnvCfg(ManagerBasedRLEnvCfg):
     def __post_init__(self) -> None:
         """Post initialization."""
         # general settings
-        self.decimation = 4
+        self.decimation = 1
         self.episode_length_s = 8
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)
-        # self.viewer.lookat = (0.0, 0.0, 2.5)
+        self.viewer.lookat = (12.2, 4.0, 1.2)
         # simulation settings
         self.sim.dt = 1 / 120
         self.sim.render_interval = self.decimation

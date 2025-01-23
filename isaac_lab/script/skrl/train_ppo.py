@@ -11,6 +11,7 @@ from skrl.trainers.torch import SequentialTrainer
 from skrl.utils import set_seed
 from skrl.utils.spaces.torch import unflatten_tensorized_space
 from lr_schedulers import CosineAnnealingWarmUpRestarts
+from skrl.resources.schedulers.torch import KLAdaptiveLR
 
 # seed for reproducibility
 set_seed(42)  # e.g. `set_seed(42)` for fixed seed
@@ -56,16 +57,10 @@ class Shared(GaussianMixin, DeterministicMixin, Model):
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
+            nn.Linear(512, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
+            nn.Linear(128, 32),
             nn.BatchNorm1d(32),
             nn.ReLU(),
         )
@@ -114,7 +109,7 @@ device = env.device
 
 
 # instantiate a memory as rollout buffer (any memory can be used for this)
-replay_buffer_size = 512 * 1 * env.num_envs
+replay_buffer_size = 1024 * 1 * env.num_envs
 memory_size = int(replay_buffer_size / env.num_envs)
 memory = RandomMemory(memory_size=memory_size, num_envs=env.num_envs, device=device)
 # memory.load("skrl_test/memory/24-10-31_13-05-25-860930_memory_0x77a9a9ff3730.csv")
@@ -135,10 +130,11 @@ models["value"] = models["policy"]
 # https://skrl.readthedocs.io/en/latest/api/agents/ppo.html#configuration-and-hyperparameters
 cfg = PPO_DEFAULT_CONFIG.copy()
 cfg["rollouts"] = memory_size
-cfg["learning_epochs"] = 4
+cfg["learning_epochs"] = 8
 cfg["mini_batches"] = 4
 cfg["discount_factor"] = 0.99
 # cfg["lambda"] = 0.95
+cfg["learning_rate"] = 0.0003
 cfg["learning_rate"] = 0  # CosineAnnealingWarmUpRestarts
 # cfg["grad_norm_clip"] = 1.0  # gradient clipping
 # cfg["ratio_clip"] = 0.1  # 정책 클리핑 (정책이 학습 초기에 과하게 수렴되지 않도록 작은 값을 설정)
@@ -149,15 +145,16 @@ cfg["learning_rate"] = 0  # CosineAnnealingWarmUpRestarts
 # cfg["mixed_precision"] = False
 # cfg["optimizer"] = torch.optim.Adam(models["policy"].parameters(), lr=0)
 cfg["learning_starts"] = 0
-cfg["learning_rate_scheduler"] = CosineAnnealingWarmUpRestarts
-cfg["learning_rate_scheduler_kwargs"] = {
-    "T_0": 16 * cfg["learning_epochs"],  # 첫 주기의 길이
-    "T_mult": 2,  # 매 주기마다 주기의 길이를 두배로 늘림
-    "T_up": cfg["learning_epochs"],  # warm-up 주기
-    "eta_max": 1e-3,  # 최대 학습률
-    "gamma": 0.6,  # 학습률 감소율
-}
+cfg["learning_rate_scheduler"] = KLAdaptiveLR
+# cfg["learning_rate_scheduler_kwargs"] = {
+#     "T_0": 16 * cfg["learning_epochs"],  # 첫 주기의 길이
+#     "T_mult": 2,  # 매 주기마다 주기의 길이를 두배로 늘림
+#     "T_up": cfg["learning_epochs"],  # warm-up 주기
+#     "eta_max": 1e-3,  # 최대 학습률
+#     "gamma": 0.6,  # 학습률 감소율
+# }
 
+cfg["mixed_precision"] = True
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 1024
 cfg["experiment"]["checkpoint_interval"] = 100000
@@ -175,7 +172,7 @@ agent = PPO(
 # agent.load("./runs/torch/AGV/24-10-30_17-27-56-597455_PPO/checkpoints/agent_400000.pt")
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 10000000}
+cfg_trainer = {"timesteps": 1000000}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 trainer.train()
