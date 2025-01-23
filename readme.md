@@ -1,6 +1,7 @@
 # NVIDIA Isaac Lab(with Octo Imitation Learning) for Digital Twin
 
-![image](https://github.com/user-attachments/assets/4f89aec0-a7d0-4eea-aaac-d00036ae89e0)
+![image](https://github.com/user-attachments/assets/d01e29c8-cc67-4f92-89a6-afab01ae212b)
+
 
 
 ## pre-install
