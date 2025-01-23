@@ -1,3 +1,7 @@
+# NVIDIA Isaac Lab(with Octo Imitation Learning) for Digital Twin
+
+![image1](https://github.com/user-attachments/assets/e0336b0b-7ed9-4735-958a-add1b9d8f89e)
+
 ## pre-install
 ubuntu: 22.04
 nvidia-driver: 550.127.08
