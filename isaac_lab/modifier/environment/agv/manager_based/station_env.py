@@ -1,42 +1,31 @@
-import random
-from collections.abc import Sequence
-from dataclasses import MISSING
-from omni.isaac.lab.actuators import ImplicitActuatorCfg
 import numpy as np
 import omni.isaac.core.utils.stage as stage_utils
-import omni.isaac.core.utils.prims as prim_utils
 import omni.isaac.lab.sim as sim_utils
-import omni.isaac.lab.utils.math as math_utils
-import omni.isaac.lab.utils.string as string_utils
 import omni.isaac.lab_tasks.manager_based.classic.cartpole.mdp as mdp
 import torch
-from omni.isaac.debug_draw import _debug_draw
+from omni.isaac.lab.actuators import ImplicitActuatorCfg
 from omni.isaac.lab.assets import (
     Articulation,
     ArticulationCfg,
     AssetBaseCfg,
-    RigidObject,
-    RigidObjectCfg,
 )
 from omni.isaac.lab.envs import ManagerBasedEnv, ManagerBasedRLEnv, ManagerBasedRLEnvCfg
-from omni.isaac.lab.managers import CurriculumTermCfg as CurrTerm
-from omni.isaac.lab.managers import EventTermCfg as EventTerm
-from omni.isaac.lab.managers import ManagerTermBase, RewardTermCfg, SceneEntityCfg
 from omni.isaac.lab.managers import ManagerTermBase as TermBase
 from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
 from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
 from omni.isaac.lab.managers import RewardTermCfg as RewTerm
+from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.managers import TerminationTermCfg as DoneTerm
 from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.sensors import ContactSensorCfg, TiledCameraCfg
 from omni.isaac.lab.utils import configclass
+from pxr import Gf
+
 from .agv_cfg import AGV_CFG, AGV_JOINT
 from .station_cfg import LIFT_CFG
-from pxr import Gf
 
 ENV_REGEX_NS = "/World/envs/env_.*"
 
-from omni.isaac.dynamic_control import _dynamic_control
+# from omni.isaac.dynamic_control import _dynamic_control
 
 
 @configclass
@@ -49,7 +38,7 @@ class StationSceneCfg(InteractiveSceneCfg):
     station = AssetBaseCfg(
         prim_path=f"{ENV_REGEX_NS}/station",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/sites/IsaacLab/model/station/station_empty.usd"
+            usd_path="/home/sites/IsaacLab/model/station/station_scene.usd"
         ),
     )
 
@@ -65,7 +54,7 @@ class StationSceneCfg(InteractiveSceneCfg):
             mass_props=sim_utils.MassPropertiesCfg(mass=1500),
         ),
         init_state=ArticulationCfg.InitialStateCfg(
-            pos=(18.0, 3.0, 1.35),
+            pos=(18.0, 3.0, 1.25),
             rot=(0.707, 0.0, 0.0, -0.707),
         ),
     )
@@ -73,7 +62,7 @@ class StationSceneCfg(InteractiveSceneCfg):
     lift_0: ArticulationCfg = LIFT_CFG.replace(
         prim_path=f"{ENV_REGEX_NS}/lift_0",
         init_state=ArticulationCfg.InitialStateCfg(
-            pos=(12.2, 4.0, 1.2),
+            pos=(12.2, 4.0, 1.14379),
             rot=(0.707, 0.0, 0.0, 0.707),
         ),
     )
@@ -81,7 +70,7 @@ class StationSceneCfg(InteractiveSceneCfg):
     lift_1: ArticulationCfg = LIFT_CFG.replace(
         prim_path=f"{ENV_REGEX_NS}/lift_1",
         init_state=ArticulationCfg.InitialStateCfg(
-            pos=(6.4, 4.0, 1.2),
+            pos=(6.4, 4.0, 1.14379),
             rot=(0.707, 0.0, 0.0, 0.707),
         ),
     )
@@ -93,7 +82,7 @@ class StationSceneCfg(InteractiveSceneCfg):
             mass_props=sim_utils.MassPropertiesCfg(mass=1000),
         ),
         init_state=ArticulationCfg.InitialStateCfg(
-            pos=(2.85, -1.82, 1.2),
+            pos=(2.85, -1.82, 1.14379),
             rot=(0.707, 0, 0, 0.707),
             # pos=(12.17, 0, 1.2),
             # rot=(0, 0, 0, 1),
@@ -115,7 +104,7 @@ class StationSceneCfg(InteractiveSceneCfg):
     )
     distant_light = AssetBaseCfg(
         prim_path="/World/DistantLight",
-        spawn=sim_utils.DistantLightCfg(color=(.9, .9, .9), intensity=3000),
+        spawn=sim_utils.DistantLightCfg(color=(0.9, 0.9, 0.9), intensity=3000),
         init_state=AssetBaseCfg.InitialStateCfg(rot=(0.65328, 0.2706, 0.2706, 0.65328)),
     )
 
